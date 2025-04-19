@@ -1,0 +1,10 @@
+import asyncio
+from bleak import BleakScanner
+
+async def find_devices():
+    devices = await BleakScanner.discover()
+    for device in devices:
+        print(f"نام: {device.name}, آدرس: {device.address}")
+
+if __name__ == "__main__":
+    asyncio.run(find_devices())
