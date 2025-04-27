@@ -34,6 +34,17 @@ def create_heartbeats_table(cursor, connection):
     connection.commit()
     print("جدول ساخته شد یا از قبل وجود داشت!")
 
+def create_rate_count_table(cursor, connection):
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS public.rate_count (
+            id SERIAL PRIMARY KEY,
+            rate_id bigint REFERENCES public.home_heartbeats(id),
+            rate_count_number integer NOT NULL
+        );
+    """)
+    connection.commit()
+    print("جدول rate_count ساخته شد یا از قبل وجود داشت!")
+
 def save_heart_rate(user_id, bpm, tag_no=None, description=None):
     connection, cursor = connect_db()
     if connection:
@@ -43,12 +54,26 @@ def save_heart_rate(user_id, bpm, tag_no=None, description=None):
         current_time = datetime.now()
         cursor.execute("""
             INSERT INTO public.home_heartbeats (user_id, tag_no, date, description, heart_beats)
-            VALUES (%s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s) RETURNING id
         """, (user_id, tag_no, current_time, description, bpm))
+        rate_id = cursor.fetchone()[0]  # دریافت rate_id
         connection.commit()
         print("ضربان قلب ذخیره شد!")
         cursor.close()
         connection.close()
+        return rate_id  # برگرداندن rate_id
+
+def save_rate_count(rate_id, count):
+    connection, cursor = connect_db()
+    if connection:
+        cursor.execute("""
+            INSERT INTO public.rate_count (rate_id, rate_count_number)
+            VALUES (%s, %s)
+        """, (rate_id, count))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        print("تعداد ضربان ذخیره شد!")
 
 if __name__ == "__main__":
     save_heart_rate(1, 75, "test_tag", "تست ضربان قلب")
