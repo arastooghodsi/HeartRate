@@ -47,7 +47,7 @@ async def connect_to_device():
         await client.start_notify(HEART_RATE_UUID, heart_rate_handler)
 
         try:
-            await asyncio.sleep(60)  # Monitor time
+            await asyncio.sleep(10)  # Monitor time
         finally:
             # Save last BPM when time over
             if bpm_count > 0:
